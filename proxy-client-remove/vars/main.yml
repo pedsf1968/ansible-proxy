@@ -1,0 +1,3 @@
+---
+# vars file for proxy-client-remove
+squid_apt_file_conf: /etc/apt/apt.conf.d/proxy.conf

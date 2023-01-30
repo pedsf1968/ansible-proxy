@@ -1,0 +1,6 @@
+---
+# tasks file for proxy-client-remove
+- name: Remove apt proxy configuration file
+  ansible.builtin.file:
+    path: "{{ squid_apt_file_conf }}"
+    state: absent
