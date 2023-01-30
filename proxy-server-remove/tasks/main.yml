@@ -7,22 +7,15 @@
     state: stopped
     enabled: false
 
-
-
-- name: Stop and disable Squid service
-  ansible.builtin.systemd:
-    name: squid
-    state: stopped
-    enabled: false
-
-- name: Remove /etc/init.d/squid service
+- name: Remove all files and service
   ansible.builtin.file:
-    path: /etc/init.d/squid
+    path: "{{ item }}"
     state: absent
-
-- name: Reload systemd services
-  ansible.builtin.systemd:
-    daemon_reload: yes
+  with_items:
+  - /etc/init.d/squid
+  - /etc/systemd/system/squid.service
+  - /etc/squid
+  - /var/spool/squid
 
 - name: Remove Squid package
   ansible.builtin.apt:
@@ -31,19 +24,15 @@
   with_items:
   - squid
 
-- name: Remove dependencies
+- name: Clean dependencies
   ansible.builtin.apt:
     autoclean: yes
+
+- name: Remove dependencies
+  ansible.builtin.apt:
     autoremove: yes
-    clean: yes
+    purge: yes
 
-
-- name: Remove /etc/squid folder
-  ansible.builtin.file:
-    path: /etc/squid
-    state: absent
-
-- name: Remove /var/spool/squid folder
-  ansible.builtin.file:
-    path: /var/spool/squid
-    state: absent
+- name: Reload systemd services
+  ansible.builtin.systemd:
+    daemon_reexec: yes

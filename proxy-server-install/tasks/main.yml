@@ -1,6 +1,22 @@
 ---
 # tasks file for proxy server install
 
+- name: Set {{ proxy_host }}.{{ domain_name }} hostname
+  ansible.builtin.hostname:
+    name: {{ proxy_host }}.{{ domain_name }}
+
+- name: "Add proxy server in /etc/hosts"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ proxy_ip }} {{ proxy_host }}.{{ domain_name }} {{ proxy_host }}"
+    state: present
+    owner: root
+    group: root
+
+- name: Remove apt proxy configuration file
+  ansible.builtin.file:
+    path: "{{ squid_apt_file_conf }}"
+    state: absent
 
 - name: Install squid package
   ansible.builtin.apt:
@@ -13,30 +29,31 @@
 - name: Make /etc/squid/squid.conf backup
   ansible.builtin.copy:
     src: "/etc/squid/squid.conf"
-    dest: "/etc/squid/squid.conf.bak"
+    dest: "/etc/squid/squid.conf.BAK"
     backup: true
     remote_src: yes
 
-#- name: "Generate /etc/squid/squid.conf file"
-#  template:
-#    src: ../templates/squid.conf.j2
-#    dest: /etc/squid/squid.conf
-#    owner: root
-#    group: root
+- name: Insert ACL for {{ squid_localnet_name }}
+  ansible.builtin.lineinfile:
+    path: "/etc/squid/squid.conf"
+    insertafter: "^acl localnet src*"
+    line: "acl {{ squid_localnet_name }} src {{ item }}"
+  with_items: "{{ squid_localnet_src }}"  
 
-
-
-#- name: Set Squid listening port
-#  ansible.builtin.lineinfile:
-#    path: "/etc/squid/squid.conf"
-#    search_string: "http_port 3128"
-#    line: "http_port {{ squid_host }}:{{ squid_http_port }}"
-
-#- name: Set Squid visible hostname
-#  ansible.builtin.lineinfile:
-#    path: "/etc/squid/squid.conf"
-#    line: "visible_hostname {{ proxy_host }}"
-#    state: present
+- name: Insert http_access for {{ squid_localnet_name }}
+  ansible.builtin.lineinfile:
+    path: "/etc/squid/squid.conf"
+    insertafter: "^http_access allow localhost*"
+    line: "http_access allow {{ squid_localnet_name }}"
+  
+- name: Set Squid listening port
+  ansible.builtin.lineinfile:
+    path: "/etc/squid/squid.conf"
+    search_string: "http_port 3128"
+    line: "{{ item }}"
+  with_items: 
+  - "http_port {{ squid_host }}:{{ squid_http_port }}"
+  - "http_port {{ squid_ip }}:{{ squid_http_port }}"
 
 - name: Start Squid service
   ansible.builtin.service:

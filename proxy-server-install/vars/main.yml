@@ -1,7 +1,10 @@
 ---
 # vars file for proxy-server-install
 
-squid_host: "{{ proxy_host }}"
-squid_visible_hostname: "{{ proxy_host }}"
-squid_http_port: "{{ proxy_port}}"
-
+squid_host: "{{ proxy_host  | default('proxy-server') }}"
+squid_ip: "{{ proxy_ip  | default('10.1.77.15') }}"
+squid_visible_hostname: "{{ proxy_host | default('proxy-server') }}"
+squid_http_port: "{{ proxy_port | default('3128') }}"
+squid_apt_file_conf: "{{ proxy_apt_file_conf | default('/etc/apt/apt.conf.d/proxy.conf') }}"
+squid_localnet_name: mynetwork
+squid_localnet_src: "{{ proxy_clients | default('[ 10.1.55.0/24, 10.1.66.0/24, 10.1.77.0/24 ]') }}"
