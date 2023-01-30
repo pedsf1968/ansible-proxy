@@ -1,0 +1,49 @@
+---
+# tasks file for proxy-server-remove
+
+- name: Stop Squid service
+  ansible.builtin.service:
+    name: squid
+    state: stopped
+    enabled: false
+
+
+
+- name: Stop and disable Squid service
+  ansible.builtin.systemd:
+    name: squid
+    state: stopped
+    enabled: false
+
+- name: Remove /etc/init.d/squid service
+  ansible.builtin.file:
+    path: /etc/init.d/squid
+    state: absent
+
+- name: Reload systemd services
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Remove Squid package
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+  - squid
+
+- name: Remove dependencies
+  ansible.builtin.apt:
+    autoclean: yes
+    autoremove: yes
+    clean: yes
+
+
+- name: Remove /etc/squid folder
+  ansible.builtin.file:
+    path: /etc/squid
+    state: absent
+
+- name: Remove /var/spool/squid folder
+  ansible.builtin.file:
+    path: /var/spool/squid
+    state: absent

@@ -1,0 +1,48 @@
+---
+# tasks file for proxy-client-configure
+- name: "Add APT configuration"
+  ansible.builtin.template:
+    src: ../templates/proxy.conf.j2
+    dest: /etc/apt/apt.conf.d/proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Remove previous proxy server in /etc/hosts"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^%{{ proxy_host }}%"
+    state: absent
+    owner: root
+    group: root
+
+- name: "Add proxy server in /etc/hosts"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ proxy_ip }} {{ proxy_host }}.{{ domain_name }} {{ proxy_host }}"
+    state: present
+    owner: root
+    group: root
+
+- name: "Remove previous proxy server in /etc/profile"
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: "^%{{ item }}%"
+    state: absent
+    owner: root
+    group: root
+  with_items:
+  - http_proxy
+  - https_proxy
+
+- name: "Add proxy server in /etc/profile"
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    line: "export {{ item }}://{{ proxy_ip }}:{{ proxy_port }}"
+    state: present
+    owner: root
+    group: root
+  with_items:
+  - "http_proxy=http"
+  - "https_proxy=https"
+

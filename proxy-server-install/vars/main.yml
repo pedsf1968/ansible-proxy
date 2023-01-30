@@ -1,0 +1,7 @@
+---
+# vars file for proxy-server-install
+
+squid_host: "{{ proxy_host }}"
+squid_visible_hostname: "{{ proxy_host }}"
+squid_http_port: "{{ proxy_port}}"
+

@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+Acquire {
+  HTTP::proxy "http://{{ proxy_host }}:{{ proxy_port }}";
+  HTTPS::proxy "http://{{ proxy_host }}:{{ proxy_port }}";
+}

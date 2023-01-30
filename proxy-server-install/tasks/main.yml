@@ -1,0 +1,47 @@
+---
+# tasks file for proxy server install
+
+
+- name: Install squid package
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+  - squid
+
+- name: Make /etc/squid/squid.conf backup
+  ansible.builtin.copy:
+    src: "/etc/squid/squid.conf"
+    dest: "/etc/squid/squid.conf.bak"
+    backup: true
+    remote_src: yes
+
+#- name: "Generate /etc/squid/squid.conf file"
+#  template:
+#    src: ../templates/squid.conf.j2
+#    dest: /etc/squid/squid.conf
+#    owner: root
+#    group: root
+
+
+
+#- name: Set Squid listening port
+#  ansible.builtin.lineinfile:
+#    path: "/etc/squid/squid.conf"
+#    search_string: "http_port 3128"
+#    line: "http_port {{ squid_host }}:{{ squid_http_port }}"
+
+#- name: Set Squid visible hostname
+#  ansible.builtin.lineinfile:
+#    path: "/etc/squid/squid.conf"
+#    line: "visible_hostname {{ proxy_host }}"
+#    state: present
+
+- name: Start Squid service
+  ansible.builtin.service:
+    name: squid
+    state: restarted
+    enabled: true
+
+
